@@ -1,0 +1,8 @@
+*.egg
+*.egg-info
+*.py[cod]
+dist/
+build/
+__pycache__
+.*
+setup.cfg
