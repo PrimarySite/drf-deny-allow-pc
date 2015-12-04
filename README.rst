@@ -10,10 +10,8 @@ determine if the access is allowed. If any of the functions returns True,
 the access is allowed, if none of the permission checks passes the access
 will be denied. This enables to write small, reusable and chainable permissions
 
-.. image:: https://codecov.io/github/PrimarySite/drf-deny-allow-pc/coverage.svg?branch=master
-    :target: https://codecov.io/github/PrimarySite/drf-deny-allow-pc?branch=master
-
 .. image:: https://travis-ci.org/PrimarySite/drf-deny-allow-pc.svg?branch=master
     :target: https://travis-ci.org/PrimarySite/drf-deny-allow-pc
 
-
+.. image:: https://codecov.io/github/PrimarySite/drf-deny-allow-pc/coverage.svg?branch=master
+    :target: https://codecov.io/github/PrimarySite/drf-deny-allow-pc?branch=master
