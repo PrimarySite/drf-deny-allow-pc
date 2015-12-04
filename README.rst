@@ -14,4 +14,4 @@ will be denied. This enables to write small, reusable and chainable permissions
     :target: https://travis-ci.org/PrimarySite/drf-deny-allow-pc
 
 .. image:: https://codecov.io/github/PrimarySite/drf-deny-allow-pc/coverage.svg?branch=master
-    :target: https://codecov.io/github/PrimarySite/drf-deny-allow-pc?branch=master
+    :target: https://codecov.io/github/PrimarySite/drf-deny-allow-pc
