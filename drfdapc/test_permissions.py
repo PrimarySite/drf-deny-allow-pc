@@ -89,6 +89,10 @@ class PermissionFunctionTestCase(BaseTestCase):
         self.request.user = self.user
         self.assertTrue(allow_authenticated(request=self.request))
 
+    def test_allow_authenticated_no_request(self):
+        """Without a request we cannot get the user."""
+        with self.assertRaises(TypeError):
+            allow_authenticated()
 
 class DABasePermissionTestCase(BaseTestCase):
 

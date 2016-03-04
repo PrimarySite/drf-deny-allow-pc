@@ -24,16 +24,19 @@ def authenticated_users(func):
     """
     This decorator is used to abstract common authentication checking
     functionality out of permission checks.
+
+    `request` is required either as the first positional argument
+    or as a Keyword argument
     """
 
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        if args:
-            request = args[0]
-        elif kwargs.get('request'):
+        if kwargs.get('request'):
             request = kwargs.get('request')
+        elif args:
+            request = args[0]
         else:
-            return False
+            raise TypeError('authenticated_users() missing 1 required argument: \'request\'')
 
         if not(request.user and request.user.is_authenticated()):
             return False
