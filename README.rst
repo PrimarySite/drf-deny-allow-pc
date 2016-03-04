@@ -18,3 +18,7 @@ will be **denied**. This enables to write small, reusable and chainable permissi
 
 .. image:: https://codecov.io/github/PrimarySite/drf-deny-allow-pc/coverage.svg?branch=master
     :target: https://codecov.io/github/PrimarySite/drf-deny-allow-pc
+
+.. image:: https://readthedocs.org/projects/drfdapc/badge/?version=latest
+    :target: http://drfdapc.readthedocs.org/en/latest/?badge=latest
+    :alt: Documentation Status
