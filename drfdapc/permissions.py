@@ -4,18 +4,46 @@ DRF Deny All - Allow Specific Permission Classes.
 
 In Django rest Framework the permission classes work as:
 
-    If any permission check fails an [...] exception will be raised,
-    and the main body of the view will not run.
+    *If any permission check fails an [...] exception will be raised,
+    and the main body of the view will not run.*
 
 This implementation of permission classes takes a list of functions that
-determine if the access is allowed. If any of the functions returns True,
-the access is allowed, if none of the permission checks passes the access
-will be denied. This enables to write small, reusable and chainable permissions
+determine if the access is allowed. If **any** of the functions returns True,
+the access is *allowed*, if **none** of the permission checks passes the access
+will be *denied*. This enables to write small, reusable and chainable permissions
 
 """
 from __future__ import unicode_literals
 
+from functools import wraps
+
 from rest_framework import permissions
+
+
+def authenticated_users(func):
+    """
+    This decorator is used to abstract common authentication checking
+    functionality out of permission checks.
+
+    `request` is required either as the first positional argument
+    or as a Keyword argument
+    """
+
+    @wraps(func)
+    def func_wrapper(*args, **kwargs):
+        if kwargs.get('request'):
+            request = kwargs.get('request')
+        elif args:
+            request = args[0]
+        else:
+            raise TypeError('authenticated_users() missing 1 required argument: \'request\'')
+
+        if not(request.user and request.user.is_authenticated()):
+            return False
+
+        return func(*args, **kwargs)
+
+    return func_wrapper
 
 
 def deny_all(*args, **kwargs):
@@ -34,6 +62,7 @@ def deny_all(*args, **kwargs):
     return False
 
 
+@authenticated_users
 def allow_superuser(request, *args, **kwargs):
     """
     Superuser access.
@@ -42,11 +71,10 @@ def allow_superuser(request, *args, **kwargs):
     flag set.
 
     """
-    if request.user.is_authenticated():
-        return request.user.is_superuser
-    return False
+    return request.user.is_superuser
 
 
+@authenticated_users
 def allow_staff(request, *args, **kwargs):
     """
     Staff access.
@@ -54,11 +82,10 @@ def allow_staff(request, *args, **kwargs):
     This permission allows access to any user that has the `is_staff` flag set.
 
     """
-    if request.user.is_authenticated():
-        return request.user.is_staff
-    return False
+    return request.user.is_staff
 
 
+@authenticated_users
 def allow_authenticated(request, *args, **kwargs):
     """
     Authenticated user access.
@@ -67,9 +94,7 @@ def allow_authenticated(request, *args, **kwargs):
     and allow permission to any authenticated user.
 
     """
-    if request.user.is_authenticated():
-        return request.user.is_authenticated()
-    return False
+    return True
 
 
 def allow_all(*args, **kwargs):
@@ -92,7 +117,7 @@ class DABasePermission(permissions.BasePermission):
     permission checks specified in the `rw_permissions` tuple.
 
     It does not check if it is a read or a write access and treat
-    ALL access methods in the same way
+    **all** access methods in the same way
     """
 
     message = 'Permission denied.'

@@ -1,3 +1,7 @@
+############
+License
+############
+
 Copyright (c) 2007 Christian Ledermann and Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining

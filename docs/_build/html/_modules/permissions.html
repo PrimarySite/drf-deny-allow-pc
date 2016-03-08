@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>permissions &mdash; drfdapc 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="drfdapc 0.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for permissions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">DRF Deny All - Allow Specific Permission Classes.</span>
+
+<span class="sd">In Django rest Framework the permission classes work as:</span>
+
+<span class="sd">    *If any permission check fails an [...] exception will be raised,</span>
+<span class="sd">    and the main body of the view will not run.*</span>
+
+<span class="sd">This implementation of permission classes takes a list of functions that</span>
+<span class="sd">determine if the access is allowed. If **any** of the functions returns True,</span>
+<span class="sd">the access is *allowed*, if **none** of the permission checks passes the access</span>
+<span class="sd">will be *denied*. This enables to write small, reusable and chainable permissions</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">permissions</span>
+
+
+<div class="viewcode-block" id="authenticated_users"><a class="viewcode-back" href="../index.html#permissions.authenticated_users">[docs]</a><span class="k">def</span> <span class="nf">authenticated_users</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This decorator is used to abstract common authentication checking</span>
+<span class="sd">    functionality out of permission checks.</span>
+
+<span class="sd">    `request` is required either as the first positional argument</span>
+<span class="sd">    or as a Keyword argument</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">func_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">):</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;authenticated_users() missing 1 required argument: </span><span class="se">\&#39;</span><span class="s1">request</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">func_wrapper</span></div>
+
+
+<div class="viewcode-block" id="deny_all"><a class="viewcode-back" href="../index.html#permissions.deny_all">[docs]</a><span class="k">def</span> <span class="nf">deny_all</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deny Access to everyone.</span>
+
+<span class="sd">    This permission is not strictly required, since you can achieve the same</span>
+<span class="sd">    result by using an empty  tuple for the permissions setting, but you may</span>
+<span class="sd">    find it useful to specify this class because it makes the intention</span>
+<span class="sd">    explicit.</span>
+
+<span class="sd">    This permission on it&#39;s own is not useful as *nobody* will ever be able</span>
+<span class="sd">    to access a view protected with it.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">False</span></div>
+
+
+<span class="nd">@authenticated_users</span>
+<div class="viewcode-block" id="allow_superuser"><a class="viewcode-back" href="../index.html#permissions.allow_superuser">[docs]</a><span class="k">def</span> <span class="nf">allow_superuser</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Superuser access.</span>
+
+<span class="sd">    This permission allows access to any user that has the `is_superuser`</span>
+<span class="sd">    flag set.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span></div>
+
+
+<span class="nd">@authenticated_users</span>
+<div class="viewcode-block" id="allow_staff"><a class="viewcode-back" href="../index.html#permissions.allow_staff">[docs]</a><span class="k">def</span> <span class="nf">allow_staff</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Staff access.</span>
+
+<span class="sd">    This permission allows access to any user that has the `is_staff` flag set.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span></div>
+
+
+<span class="nd">@authenticated_users</span>
+<div class="viewcode-block" id="allow_authenticated"><a class="viewcode-back" href="../index.html#permissions.allow_authenticated">[docs]</a><span class="k">def</span> <span class="nf">allow_authenticated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Authenticated user access.</span>
+
+<span class="sd">    This permission class will deny permission to any unauthenticated user,</span>
+<span class="sd">    and allow permission to any authenticated user.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span></div>
+
+
+<div class="viewcode-block" id="allow_all"><a class="viewcode-back" href="../index.html#permissions.allow_all">[docs]</a><span class="k">def</span> <span class="nf">allow_all</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Allow anyone.</span>
+
+<span class="sd">    This permission will allow unrestricted access, regardless of</span>
+<span class="sd">    the request being authenticated or unauthenticated.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span></div>
+
+
+<div class="viewcode-block" id="DABasePermission"><a class="viewcode-back" href="../index.html#permissions.DABasePermission">[docs]</a><span class="k">class</span> <span class="nc">DABasePermission</span><span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deny Allow Base Permisson.</span>
+
+<span class="sd">    Permissions subclassed from this Base class will run all</span>
+<span class="sd">    permission checks specified in the `rw_permissions` tuple.</span>
+
+<span class="sd">    It does not check if it is a read or a write access and treat</span>
+<span class="sd">    **all** access methods in the same way</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Permission denied.&#39;</span>
+    <span class="n">rw_permissions</span> <span class="o">=</span> <span class="p">(</span><span class="n">deny_all</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">permission</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw_permissions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">permission</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+
+<div class="viewcode-block" id="DARWBasePermission"><a class="viewcode-back" href="../index.html#permissions.DARWBasePermission">[docs]</a><span class="k">class</span> <span class="nc">DARWBasePermission</span><span class="p">(</span><span class="n">DABasePermission</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deny Allow Base Read/Write specific Permisson.</span>
+
+<span class="sd">    Permissions subclassed from this Base class will run all</span>
+<span class="sd">    permission checks specified in the `rw_permissions` tuple</span>
+<span class="sd">    for all read and write access methods.</span>
+
+<span class="sd">    If none of the `rw_permissions` passed it will check the</span>
+<span class="sd">    permissions based on the http access methods.</span>
+
+<span class="sd">    For read access (`options`, `head`, `get`) methods</span>
+<span class="sd">    all permissions in the `read_permissions` methods are checked.</span>
+
+<span class="sd">    For write access (`post`, `put`, `patch`, `delete`) methods</span>
+<span class="sd">    all permissions in the `write_permissions` methods are checked.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">read_permissions</span> <span class="o">=</span> <span class="p">(</span><span class="n">deny_all</span><span class="p">,)</span>
+    <span class="n">write_permissions</span> <span class="o">=</span> <span class="p">(</span><span class="n">deny_all</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">super</span><span class="p">(</span><span class="n">DARWBasePermission</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">has_permission</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+            <span class="c1"># Check permissions for all read or write requests</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">permissions</span><span class="o">.</span><span class="n">SAFE_METHODS</span><span class="p">:</span>
+            <span class="c1"># Check permissions for read-only requests</span>
+            <span class="k">for</span> <span class="n">permission</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_permissions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">permission</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Check permissions for write requests</span>
+            <span class="k">for</span> <span class="n">permission</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_permissions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">permission</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Christian Ledermann.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

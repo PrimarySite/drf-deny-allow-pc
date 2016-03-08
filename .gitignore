@@ -6,3 +6,6 @@ build/
 __pycache__
 .*
 setup.cfg
+_build
+_static
+_templates
