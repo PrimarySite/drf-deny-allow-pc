@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
-from .permissions import (DABasePermission, DARWBasePermission,
+from .permissions import (DABasePermission, DARWBasePermission, DACrudBasePermission,
                           allow_all, allow_authenticated,
                           allow_staff, allow_superuser, deny_all)
 from django.contrib.auth.models import AnonymousUser, User
@@ -93,6 +93,7 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Without a request we cannot get the user."""
         with self.assertRaises(TypeError):
             allow_authenticated()
+
 
 class DABasePermissionTestCase(BaseTestCase):
 
@@ -239,3 +240,74 @@ class DARWBasePermissionTestCase(BaseTestCase):
         self.assertFalse(permission.has_permission(self.request, None))
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
+
+
+class DACrudBasePermissionTestCase(BaseTestCase):
+
+    """
+    Test DACrudBasePermission.
+
+    We Test here only the combination of anonymous, staff and superuser
+    as permutations are covered in the above test cases.
+    """
+
+    def check_permission(self, permission, request):
+        """
+        Test the permission for a request for anonymous, staff and superuser.
+
+        Assuming that only staff has the permission.
+        """
+        request.user = AnonymousUser()
+        self.assertFalse(permission.has_permission(request, None))
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        request.user = self.user
+        self.assertTrue(permission.has_permission(request, None))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        request.user = self.user
+        self.assertFalse(permission.has_permission(request, None))
+
+    def test_rw_staff(self):
+        """Staff can read and write."""
+        permission = DACrudBasePermission()
+        permission.rw_permissions = (allow_staff, )
+        request = self.factory.get('/')
+        self.check_permission(permission, request)
+        request = self.factory.post('/')
+        self.check_permission(permission, request)
+        request = self.factory.put('/')
+        self.check_permission(permission, request)
+        request = self.factory.delete('/')
+        self.check_permission(permission, request)
+
+    def test_read_staff(self):
+        """Only Staff can read."""
+        request = self.factory.get('/')
+        permission = DACrudBasePermission()
+        permission.read_permissions = (allow_staff, )
+        request.user = AnonymousUser()
+        self.check_permission(permission, request)
+
+    def test_create_staff(self):
+        """Only Staff can create."""
+        request = self.factory.post('/')
+        permission = DACrudBasePermission()
+        permission.add_permissions = (allow_staff, )
+        self.check_permission(permission, request)
+
+    def test_update_staff(self):
+        """Only Staff can update."""
+        request = self.factory.put('/')
+        permission = DACrudBasePermission()
+        permission.change_permissions = (allow_staff, )
+        self.check_permission(permission, request)
+
+    def test_delete_staff(self):
+        """Only Staff can delete."""
+        request = self.factory.delete('/')
+        permission = DACrudBasePermission()
+        permission.delete_permissions = (allow_staff, )
+        self.check_permission(permission, request)
