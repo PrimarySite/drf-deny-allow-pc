@@ -48,7 +48,8 @@ def authenticated_users(func):
         elif args:
             request = args[0]
         else:
-            raise TypeError('authenticated_users() missing 1 required argument: \'request\'')
+            raise TypeError(
+                'authenticated_users() missing 1 required argument: `request`')
 
         if not(request.user and request.user.is_authenticated()):
             return False
@@ -230,7 +231,8 @@ class DARWBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
 
-        if super(DARWBasePermission, self).has_object_permission(request, view, obj):
+        if super(DARWBasePermission, self).has_object_permission(request,
+                                                                 view, obj):
             # Check permissions for all read or write requests
             return True
         if request.method in permissions.SAFE_METHODS:
@@ -261,11 +263,14 @@ class DACrudBasePermission(DABasePermission):
     For read access (`options`, `head`, `get`) methods
     all permissions in the `read_permissions` methods are checked.
 
-    For create access (`post`) all permissions in the add_permissions are checked.
+    For create access (`post`) all permissions in the add_permissions are
+    checked.
 
-    For update access (`put) all permissions in the change_permissions are checked.
+    For update access (`put) all permissions in the change_permissions are
+    checked.
 
-    For delete access (`delete`) all permissions in the delete_permissions are checked.
+    For delete access (`delete`) all permissions in the delete_permissions are
+    checked.
 
     """
 
@@ -345,11 +350,12 @@ class DACrudBasePermission(DABasePermission):
         `.check_object_permissions(request, obj)` method on the view at the
         point at which you've retrieved the object.
         """
-        if super(DACrudBasePermission, self).has_object_permission(request, view, obj):
+        if super(DACrudBasePermission, self).has_object_permission(request,
+                                                                   view, obj):
             # Check permissions for all read or write requests
             return True
 
-        if request.method in drf_permissions.SAFE_METHODS:
+        if request.method in permissions.SAFE_METHODS:
             for permission in self.object_read_permissions:
                 if permission(request, view, obj):
                     return True
