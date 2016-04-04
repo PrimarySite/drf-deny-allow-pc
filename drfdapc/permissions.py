@@ -18,11 +18,11 @@ and `has_object_permission(self, request, view, obj)` methods.
 
 The **Default** is `deny_all` which means when you subclass `DABasePermission`,
 `DARWBasePermission` or `DACrudBasePermission` you have to set `*_permissions`
-on your class to allow access.
+explicitly on your class to allow access.
 
-If you only need view level security you should set the `object_*_permissions`
-to `allow_all` otherwise your view may reject users when `.get_object()` is
-called through REST framework's view machinery
+If you only need view level security you may set the `object_*_permissions`
+to `allow_all` otherwise your view will reject users when `.get_object()` is
+called through REST framework's view machinery.
 
 """
 from __future__ import unicode_literals
@@ -263,13 +263,13 @@ class DACrudBasePermission(DABasePermission):
     For read access (`options`, `head`, `get`) methods
     all permissions in the `read_permissions` methods are checked.
 
-    For create access (`post`) all permissions in the add_permissions are
+    For create access (`post`) all permissions in the `add_permissions` are
     checked.
 
-    For update access (`put) all permissions in the change_permissions are
+    For update access (`put`) all permissions in the `change_permissions` are
     checked.
 
-    For delete access (`delete`) all permissions in the delete_permissions are
+    For delete access (`delete`) all permissions in the `delete_permissions` are
     checked.
 
     """
