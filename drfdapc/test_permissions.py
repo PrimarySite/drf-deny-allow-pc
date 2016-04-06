@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
+import mock
 from .permissions import (DABasePermission, DARWBasePermission, DACrudBasePermission,
                           allow_all, allow_authenticated,
                           allow_staff, allow_superuser, deny_all)
@@ -24,6 +25,94 @@ class BaseTestCase(APITransactionTestCase):
         for model in models:
             model.objects.all().delete()
 
+    def has_access(self, request, view=None, obj=None, *args, **kwargs):
+        """A Dummy Object Permission for easy to mock objects."""
+        try:
+            return bool(obj.allows_access)
+        except AttributeError:
+            return False
+
+    def check_permission(self, permission, request):
+        """
+        Test the permission for a request for anonymous, staff and superuser.
+
+        Assuming that only staff has the permission.
+        """
+        request.user = AnonymousUser()
+        self.assertFalse(permission.has_permission(request, None))
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        request.user = self.user
+        self.assertTrue(permission.has_permission(request, None))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        request.user = self.user
+        self.assertFalse(permission.has_permission(request, None))
+
+    def check_object_permission(self, permission, request):
+        """
+        Test the permission for a request for anonymous, staff and superuser.
+
+        Assuming that only staff can access the object when the object itself
+        forbids access.
+        """
+        obj = mock.Mock()
+        # allow access
+        obj.allows_access = True
+        request.user = AnonymousUser()
+        self.assertTrue(permission.has_object_permission(request, None, obj))
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        request.user = self.user
+        self.assertTrue(permission.has_object_permission(request, None, obj))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        request.user = self.user
+        self.assertTrue(permission.has_object_permission(request, None, obj))
+        # restrict access
+        obj.allows_access = False
+        request.user = AnonymousUser()
+        self.assertFalse(permission.has_object_permission(request, None, obj))
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        request.user = self.user
+        self.assertTrue(permission.has_object_permission(request, None, obj))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        request.user = self.user
+        self.assertFalse(permission.has_object_permission(request, None, obj))
+
+    def _test_rw_staff(self):
+        """Staff can read and write."""
+        permission = self.permission()
+        permission.rw_permissions = (allow_staff, )
+        request = self.factory.get('/')
+        self.check_permission(permission, request)
+        request = self.factory.post('/')
+        self.check_permission(permission, request)
+        request = self.factory.put('/')
+        self.check_permission(permission, request)
+        request = self.factory.delete('/')
+        self.check_permission(permission, request)
+
+    def _test_rw_object_staff(self):
+        """Staff can read and write."""
+        permission = self.permission()
+        permission.object_rw_permissions = (allow_staff, self.has_access)
+        request = self.factory.get('/')
+        self.check_object_permission(permission, request)
+        request = self.factory.post('/')
+        self.check_object_permission(permission, request)
+        request = self.factory.put('/')
+        self.check_object_permission(permission, request)
+        request = self.factory.delete('/')
+        self.check_object_permission(permission, request)
 
 class PermissionFunctionTestCase(BaseTestCase):
 
@@ -99,9 +188,11 @@ class DABasePermissionTestCase(BaseTestCase):
 
     """Test DABasePermission."""
 
+    permission = DABasePermission
+
     def test_staff_and_superuser(self):
         """Assign 2 permissions and check that both have access."""
-        permission = DABasePermission()
+        permission = self.permission()
         permission.rw_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
@@ -119,15 +210,66 @@ class DABasePermissionTestCase(BaseTestCase):
         self.request.user = self.user
         self.assertTrue(permission.has_permission(self.request, None))
 
+    def test_staff_and_superuser_object(self):
+        """Assign 2 permissions and check that both have access to a certain object."""
+        permission = self.permission()
+        permission.object_rw_permissions = (allow_staff, allow_superuser, self.has_access)
+        obj = mock.Mock()
+        obj.allows_access = True
+        self.request.user = AnonymousUser()
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+        self.request.user = self.user
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+        self.request.user = self.user
+        self.request.user = self.user
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        self.request.user = self.user
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+        # now the object does not allow access
+        obj.allows_access = False
+        self.request.user = AnonymousUser()
+        self.assertFalse(permission.has_object_permission(self.request, None, obj))
+        self.user.is_superuser = False
+        self.user.is_staff = False
+        self.user.save()
+        self.request.user = self.user
+        self.assertFalse(permission.has_object_permission(self.request, None, obj))
+        self.request.user = self.user
+        self.request.user = self.user
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.user.save()
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        self.request.user = self.user
+        self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
+    def test_rw_staff(self):
+        """Staff can read and write."""
+        self._test_rw_staff()
+
+    def test_rw_object_staff(self):
+        """Staff can read and write."""
+        self._test_rw_object_staff()
 
 class DARWBasePermissionTestCase(BaseTestCase):
 
     """Test DARWBasePermission."""
 
+    permission = DARWBasePermission
+
     def test_rw_staff_and_superuser(self):
         """Assign 2 permissions to rw_permissions and check that both have access."""
         self.post_request = self.factory.post('/')
-        permission = DARWBasePermission()
+        permission = self.permission()
         permission.rw_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
@@ -154,9 +296,9 @@ class DARWBasePermissionTestCase(BaseTestCase):
         self.assertTrue(permission.has_permission(self.post_request, None))
 
     def test_w_staff_and_superuser(self):
-        """Assign 2 permissions to rw_permissions and check that both have access."""
+        """Assign 2 permissions to write_permissions and check that both have access."""
         self.post_request = self.factory.post('/')
-        permission = DARWBasePermission()
+        permission = self.permission()
         permission.write_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
@@ -166,7 +308,6 @@ class DARWBasePermissionTestCase(BaseTestCase):
         self.assertFalse(permission.has_permission(self.request, None))
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
-        self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
@@ -185,7 +326,7 @@ class DARWBasePermissionTestCase(BaseTestCase):
     def test_r_staff_and_superuser(self):
         """Assign 2 permissions to rw_permissions and check that both have access."""
         self.post_request = self.factory.post('/')
-        permission = DARWBasePermission()
+        permission = self.permission()
         permission.read_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
@@ -214,7 +355,7 @@ class DARWBasePermissionTestCase(BaseTestCase):
     def test_r_staff_and_w_superuser(self):
         """Assign a permission to read_permissions another to write_permissions."""
         self.post_request = self.factory.post('/')
-        permission = DARWBasePermission()
+        permission = self.permission()
         permission.read_permissions = (allow_staff, )
         permission.write_permissions = (allow_superuser, )
         self.request.user = AnonymousUser()
@@ -241,6 +382,42 @@ class DARWBasePermissionTestCase(BaseTestCase):
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
 
+    def test_read_staff(self):
+        """Only Staff can read."""
+        request = self.factory.get('/')
+        permission = self.permission()
+        permission.read_permissions = (allow_staff, )
+        self.check_permission(permission, request)
+
+    def test_write_staff(self):
+        """Only Staff can update."""
+        request = self.factory.post('/')
+        permission = self.permission()
+        permission.write_permissions = (allow_staff, )
+        self.check_permission(permission, request)
+
+    def test_read_object_staff(self):
+        """Only Staff can read."""
+        request = self.factory.get('/')
+        permission = self.permission()
+        permission.object_read_permissions = (allow_staff, self.has_access)
+        request.user = AnonymousUser()
+        self.check_object_permission(permission, request)
+
+    def test_write_object_staff(self):
+        """Only Staff can create."""
+        request = self.factory.post('/')
+        permission = self.permission()
+        permission.object_write_permissions = (allow_staff, self.has_access)
+        self.check_object_permission(permission, request)
+
+    def test_rw_staff(self):
+        """Staff can read and write."""
+        self._test_rw_staff()
+
+    def test_rw_object_staff(self):
+        """Staff can read and write."""
+        self._test_rw_object_staff()
 
 class DACrudBasePermissionTestCase(BaseTestCase):
 
@@ -251,63 +428,69 @@ class DACrudBasePermissionTestCase(BaseTestCase):
     as permutations are covered in the above test cases.
     """
 
-    def check_permission(self, permission, request):
-        """
-        Test the permission for a request for anonymous, staff and superuser.
-
-        Assuming that only staff has the permission.
-        """
-        request.user = AnonymousUser()
-        self.assertFalse(permission.has_permission(request, None))
-        self.user.is_superuser = False
-        self.user.is_staff = True
-        self.user.save()
-        request.user = self.user
-        self.assertTrue(permission.has_permission(request, None))
-        self.user.is_superuser = True
-        self.user.is_staff = False
-        self.user.save()
-        request.user = self.user
-        self.assertFalse(permission.has_permission(request, None))
-
-    def test_rw_staff(self):
-        """Staff can read and write."""
-        permission = DACrudBasePermission()
-        permission.rw_permissions = (allow_staff, )
-        request = self.factory.get('/')
-        self.check_permission(permission, request)
-        request = self.factory.post('/')
-        self.check_permission(permission, request)
-        request = self.factory.put('/')
-        self.check_permission(permission, request)
-        request = self.factory.delete('/')
-        self.check_permission(permission, request)
+    permission = DACrudBasePermission
 
     def test_read_staff(self):
         """Only Staff can read."""
         request = self.factory.get('/')
-        permission = DACrudBasePermission()
+        permission = self.permission()
         permission.read_permissions = (allow_staff, )
-        request.user = AnonymousUser()
         self.check_permission(permission, request)
 
     def test_create_staff(self):
         """Only Staff can create."""
         request = self.factory.post('/')
-        permission = DACrudBasePermission()
+        permission = self.permission()
         permission.add_permissions = (allow_staff, )
         self.check_permission(permission, request)
 
     def test_update_staff(self):
         """Only Staff can update."""
         request = self.factory.put('/')
-        permission = DACrudBasePermission()
+        permission = self.permission()
         permission.change_permissions = (allow_staff, )
         self.check_permission(permission, request)
 
     def test_delete_staff(self):
         """Only Staff can delete."""
         request = self.factory.delete('/')
-        permission = DACrudBasePermission()
+        permission = self.permission()
         permission.delete_permissions = (allow_staff, )
         self.check_permission(permission, request)
+
+    def test_read_object_staff(self):
+        """Only Staff can read."""
+        request = self.factory.get('/')
+        permission = self.permission()
+        permission.object_read_permissions = (allow_staff, self.has_access)
+        request.user = AnonymousUser()
+        self.check_object_permission(permission, request)
+
+    def test_create_object_staff(self):
+        """Only Staff can create."""
+        request = self.factory.post('/')
+        permission = self.permission()
+        permission.object_add_permissions = (allow_staff, self.has_access)
+        self.check_object_permission(permission, request)
+
+    def test_update_object_staff(self):
+        """Only Staff can update."""
+        request = self.factory.put('/')
+        permission = self.permission()
+        permission.object_change_permissions = (allow_staff, self.has_access)
+        self.check_object_permission(permission, request)
+
+    def test_delete_object_staff(self):
+        """Only Staff can delete."""
+        request = self.factory.delete('/')
+        permission = self.permission()
+        permission.object_delete_permissions = (allow_staff, self.has_access)
+        self.check_object_permission(permission, request)
+
+    def test_rw_staff(self):
+        """Staff can read and write."""
+        self._test_rw_staff()
+
+    def test_rw_object_staff(self):
+        """Staff can read and write."""
+        self._test_rw_object_staff()
