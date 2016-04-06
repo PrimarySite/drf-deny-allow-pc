@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
 import mock
-from .permissions import (DABasePermission, DARWBasePermission, DACrudBasePermission,
-                          allow_all, allow_authenticated,
-                          allow_staff, allow_superuser, deny_all)
-from django.contrib.auth.models import AnonymousUser, User
-from rest_framework.test import (APIRequestFactory,
-                                 APITransactionTestCase)
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User
+from rest_framework.test import APIRequestFactory
+from rest_framework.test import APITransactionTestCase
+
+from .permissions import DABasePermission
+from .permissions import DACrudBasePermission
+from .permissions import DARWBasePermission
+from .permissions import allow_all
+from .permissions import allow_authenticated
+from .permissions import allow_staff
+from .permissions import allow_superuser
+from .permissions import deny_all
 
 
 class BaseTestCase(APITransactionTestCase):
@@ -114,6 +121,7 @@ class BaseTestCase(APITransactionTestCase):
         request = self.factory.delete('/')
         self.check_object_permission(permission, request)
 
+
 class PermissionFunctionTestCase(BaseTestCase):
 
     """Test Permission functions."""
@@ -182,6 +190,18 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Without a request we cannot get the user."""
         with self.assertRaises(TypeError):
             allow_authenticated()
+
+    def test_has_access(self):
+        """Make sure our Object Test Function works as expected"""
+        obj = mock.Mock()
+        # allow access
+        obj.allows_access = True
+        self.assertTrue(self.has_access(request=self.request, obj=obj))
+        obj.allows_access = False
+        self.assertFalse(self.has_access(request=self.request, obj=obj))
+        del obj.allows_access
+        self.assertFalse(self.has_access(request=self.request, obj=obj))
+        self.assertFalse(self.has_access(request=self.request, obj=None))
 
 
 class DABasePermissionTestCase(BaseTestCase):
@@ -259,6 +279,7 @@ class DABasePermissionTestCase(BaseTestCase):
     def test_rw_object_staff(self):
         """Staff can read and write."""
         self._test_rw_object_staff()
+
 
 class DARWBasePermissionTestCase(BaseTestCase):
 
@@ -418,6 +439,7 @@ class DARWBasePermissionTestCase(BaseTestCase):
     def test_rw_object_staff(self):
         """Staff can read and write."""
         self._test_rw_object_staff()
+
 
 class DACrudBasePermissionTestCase(BaseTestCase):
 

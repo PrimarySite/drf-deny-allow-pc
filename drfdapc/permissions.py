@@ -269,8 +269,8 @@ class DACrudBasePermission(DABasePermission):
     For update access (`put`) all permissions in the `change_permissions` are
     checked.
 
-    For delete access (`delete`) all permissions in the `delete_permissions` are
-    checked.
+    For delete access (`delete`) all permissions in the `delete_permissions`
+    are checked.
 
     """
 
