@@ -145,7 +145,7 @@ class DABasePermission(permissions.BasePermission):
         All request methods are treated in the same way.
         """
         for permission in self.rw_permissions:
-            if permission(request, view):
+            if permission(request=request, view=view):
                 return True
         return False
 
@@ -163,7 +163,7 @@ class DABasePermission(permissions.BasePermission):
         point at which you've retrieved the object.
         """
         for permission in self.object_rw_permissions:
-            if permission(request, view, obj):
+            if permission(request=request, view=view, obj=obj):
                 return True
         return False
 
@@ -198,18 +198,19 @@ class DARWBasePermission(DABasePermission):
         For write access (`post`, `put`, `patch`, `delete`) methods
         all permissions in the `write_permissions` methods are checked.
         """
-        if super(DARWBasePermission, self).has_permission(request, view):
+        if super(DARWBasePermission, self).has_permission(
+                request=request, view=view):
             # Check permissions for all read or write requests
             return True
         if request.method in permissions.SAFE_METHODS:
             # Check permissions for read-only requests
             for permission in self.read_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
         else:
             # Check permissions for write requests
             for permission in self.write_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
         return False
 
@@ -231,19 +232,19 @@ class DARWBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
 
-        if super(DARWBasePermission, self).has_object_permission(request,
-                                                                 view, obj):
+        if super(DARWBasePermission, self).has_object_permission(
+                request=request, view=view, obj=obj):
             # Check permissions for all read or write requests
             return True
         if request.method in permissions.SAFE_METHODS:
             # Check permissions for read-only requests
             for permission in self.object_read_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
         else:
             # Check permissions for write requests
             for permission in self.object_write_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
         return False
 
@@ -300,35 +301,36 @@ class DACrudBasePermission(DABasePermission):
         are checked.
 
         """
-        if super(DACrudBasePermission, self).has_permission(request, view):
+        if super(DACrudBasePermission, self).has_permission(
+                request=request, view=view):
             # Check permissions for all read or write requests
             return True
 
         if request.method in permissions.SAFE_METHODS:
             # Check permissions for read-only requests
             for permission in self.read_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
             return False
 
         elif request.method in ['PUT', 'PATCH']:
             # Update
             for permission in self.change_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
             return False
 
         elif request.method == 'POST':
             # Create
             for permission in self.add_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
             return False
 
         elif request.method == 'DELETE':
             # Delete
             for permission in self.delete_permissions:
-                if permission(request, view):
+                if permission(request=request, view=view):
                     return True
         return False
 
@@ -350,31 +352,31 @@ class DACrudBasePermission(DABasePermission):
         `.check_object_permissions(request, obj)` method on the view at the
         point at which you've retrieved the object.
         """
-        if super(DACrudBasePermission, self).has_object_permission(request,
-                                                                   view, obj):
+        if super(DACrudBasePermission, self).has_object_permission(
+                request=request, view=view, obj=obj):
             # Check permissions for all read or write requests
             return True
 
         if request.method in permissions.SAFE_METHODS:
             for permission in self.object_read_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
             return False
 
         elif request.method in ['PUT', 'PATCH']:
             for permission in self.object_change_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
             return False
 
         elif request.method == 'POST':
             for permission in self.object_add_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
             return False
 
         elif request.method == 'DELETE':
             for permission in self.object_delete_permissions:
-                if permission(request, view, obj):
+                if permission(request=request, view=view, obj=obj):
                     return True
         return False
