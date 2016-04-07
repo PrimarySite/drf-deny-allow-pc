@@ -47,11 +47,13 @@ class BaseTestCase(APITransactionTestCase):
         """
         request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(request, None))
+
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         request.user = self.user
         self.assertTrue(permission.has_permission(request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -70,25 +72,30 @@ class BaseTestCase(APITransactionTestCase):
         obj.allows_access = True
         request.user = AnonymousUser()
         self.assertTrue(permission.has_object_permission(request, None, obj))
+
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         request.user = self.user
         self.assertTrue(permission.has_object_permission(request, None, obj))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         request.user = self.user
         self.assertTrue(permission.has_object_permission(request, None, obj))
+
         # restrict access
         obj.allows_access = False
         request.user = AnonymousUser()
         self.assertFalse(permission.has_object_permission(request, None, obj))
+
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         request.user = self.user
         self.assertTrue(permission.has_object_permission(request, None, obj))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -101,10 +108,13 @@ class BaseTestCase(APITransactionTestCase):
         permission.rw_permissions = (allow_staff, )
         request = self.factory.get('/')
         self.check_permission(permission, request)
+
         request = self.factory.post('/')
         self.check_permission(permission, request)
+
         request = self.factory.put('/')
         self.check_permission(permission, request)
+
         request = self.factory.delete('/')
         self.check_permission(permission, request)
 
@@ -114,10 +124,13 @@ class BaseTestCase(APITransactionTestCase):
         permission.object_rw_permissions = (allow_staff, self.has_access)
         request = self.factory.get('/')
         self.check_object_permission(permission, request)
+
         request = self.factory.post('/')
         self.check_object_permission(permission, request)
+
         request = self.factory.put('/')
         self.check_object_permission(permission, request)
+
         request = self.factory.delete('/')
         self.check_object_permission(permission, request)
 
@@ -142,13 +155,16 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Superuser has access, nobody else."""
         self.request.user = AnonymousUser()
         self.assertFalse(allow_superuser(self.request))
+
         self.request.user = self.user
         self.assertFalse(allow_superuser(self.request))
+
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertFalse(allow_superuser(self.request))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -159,13 +175,16 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Staff user has access, nobody else, not even superuser."""
         self.request.user = AnonymousUser()
         self.assertFalse(allow_staff(self.request))
+
         self.request.user = self.user
         self.assertFalse(allow_staff(self.request))
+
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(allow_staff(self.request))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -176,6 +195,7 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Any authenticated user has access."""
         self.request.user = AnonymousUser()
         self.assertFalse(allow_authenticated(self.request))
+
         self.request.user = self.user
         self.assertTrue(allow_authenticated(self.request))
 
@@ -183,6 +203,7 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Any authenticated user has access."""
         self.request.user = AnonymousUser()
         self.assertFalse(allow_authenticated(request=self.request))
+
         self.request.user = self.user
         self.assertTrue(allow_authenticated(request=self.request))
 
@@ -197,10 +218,13 @@ class PermissionFunctionTestCase(BaseTestCase):
         # allow access
         obj.allows_access = True
         self.assertTrue(self.has_access(request=self.request, obj=obj))
+
         obj.allows_access = False
         self.assertFalse(self.has_access(request=self.request, obj=obj))
+
         del obj.allows_access
         self.assertFalse(self.has_access(request=self.request, obj=obj))
+
         self.assertFalse(self.has_access(request=self.request, obj=None))
 
 
@@ -216,14 +240,17 @@ class DABasePermissionTestCase(BaseTestCase):
         permission.rw_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -238,34 +265,41 @@ class DABasePermissionTestCase(BaseTestCase):
         obj.allows_access = True
         self.request.user = AnonymousUser()
         self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
         self.request.user = self.user
         self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
         # now the object does not allow access
         obj.allows_access = False
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_object_permission(self.request, None, obj))
+
         self.user.is_superuser = False
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertFalse(permission.has_object_permission(self.request, None, obj))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_object_permission(self.request, None, obj))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
@@ -294,25 +328,32 @@ class DARWBasePermissionTestCase(BaseTestCase):
         permission.rw_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
 
@@ -323,24 +364,31 @@ class DARWBasePermissionTestCase(BaseTestCase):
         permission.write_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
 
@@ -351,25 +399,32 @@ class DARWBasePermissionTestCase(BaseTestCase):
         permission.read_permissions = (allow_staff, allow_superuser)
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
 
@@ -381,25 +436,32 @@ class DARWBasePermissionTestCase(BaseTestCase):
         permission.write_permissions = (allow_superuser, )
         self.request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = AnonymousUser()
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.request.user = self.user
         self.request.user = self.user
         self.user.is_superuser = False
         self.user.is_staff = True
         self.user.save()
         self.assertTrue(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertFalse(permission.has_permission(self.post_request, None))
+
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         self.request.user = self.user
         self.assertFalse(permission.has_permission(self.request, None))
+
         self.post_request.user = self.user
         self.assertTrue(permission.has_permission(self.post_request, None))
 
