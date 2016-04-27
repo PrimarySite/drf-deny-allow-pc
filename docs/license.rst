@@ -2,7 +2,7 @@
 License
 ############
 
-Copyright (c) 2007 Christian Ledermann and Contributors
+Copyright (c) 2015 Christian Ledermann and Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

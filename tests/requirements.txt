@@ -2,3 +2,4 @@ Django
 djangorestframework
 coverage
 codecov
+mock
