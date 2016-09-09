@@ -20,9 +20,9 @@ The **Default** is `deny_all` which means when you subclass `DABasePermission`,
 `DARWBasePermission` or `DACrudBasePermission` you have to set `*_permissions`
 explicitly on your class to allow access.
 
-If you only need view level security you may set the `object_*_permissions`
-to `allow_all` otherwise your view will reject users when `.get_object()` is
-called through REST framework's view machinery.
+If you only need view level security you may set
+`object_rw_permissions = (allow_all, )` otherwise your view will reject users
+when `.get_object()` is called through REST framework's view machinery.
 
 """
 from __future__ import unicode_literals
