@@ -9,3 +9,4 @@ from .permissions import allow_staff
 from .permissions import allow_superuser
 from .permissions import authenticated_users
 from .permissions import deny_all
+from .permissions import allow_authorized_key

@@ -3,6 +3,7 @@
 import mock
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITransactionTestCase
 
@@ -11,6 +12,7 @@ from .permissions import DACrudBasePermission
 from .permissions import DARWBasePermission
 from .permissions import allow_all
 from .permissions import allow_authenticated
+from .permissions import allow_authorized_key
 from .permissions import allow_staff
 from .permissions import allow_superuser
 from .permissions import deny_all
@@ -211,6 +213,32 @@ class PermissionFunctionTestCase(BaseTestCase):
         """Without a request we cannot get the user."""
         with self.assertRaises(TypeError):
             allow_authenticated()
+
+    def test_allow_authorized_key_valid_key(self):
+        """Valid Keys pass."""
+        view = mock.Mock()
+        view.authorized_keys = ('aa11bb22', 'cc33dd44')
+        request = self.factory.get('/', HTTP_AUTHORIZATION='aa11bb22')
+        assert allow_authorized_key(request, view)
+        request = self.factory.get('/', HTTP_AUTHORIZATION='cc33dd44')
+        assert allow_authorized_key(request, view)
+
+    def test_allow_authorized_key_invalid_key(self):
+        """Invalid Keys get rejected."""
+        view = mock.Mock()
+        view.authorized_keys = ('aa11bb22', 'cc33dd44')
+        request = self.factory.get('/', HTTP_AUTHORIZATION='aa11bb')
+        assert not allow_authorized_key(request, view)
+        request = self.factory.get('/', HTTP_AUTHORIZATION='cc33dd44xxx')
+        assert not allow_authorized_key(request, view)
+
+    def test_allow_authorized_key_invalid_authorized_keys_raises_improperly_configured_error(self):
+        """Invalid configuration raises assertion error."""
+        view = mock.Mock()
+        view.authorized_keys = ('aa11bb22')
+        request = self.factory.get('/', HTTP_AUTHORIZATION='aa11bb22')
+        with self.assertRaises(ImproperlyConfigured):
+            allow_authorized_key(request, view)
 
     def test_has_access(self):
         """Make sure our Object Test Function works as expected"""

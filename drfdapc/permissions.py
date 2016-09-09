@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 
 from functools import wraps
 
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework import permissions
 
 
@@ -119,6 +120,21 @@ def allow_all(*args, **kwargs):
 
     """
     return True
+
+
+def allow_authorized_key(request, view, *args, **kwargs):
+    """
+    The request must contain a authentication header that matches one of the API Keys.
+
+    The API Keys are set in the authorized_keys attribute of the view.
+    """
+    key = request.META.get('HTTP_AUTHORIZATION')
+    if not isinstance(view.authorized_keys, (tuple, list)):
+        raise ImproperlyConfigured(
+            'authorized_keys must be a tuple or a list')
+    if key in view.authorized_keys:
+        return True
+    return False
 
 
 class DABasePermission(permissions.BasePermission):
