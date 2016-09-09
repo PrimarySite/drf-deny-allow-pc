@@ -44,6 +44,7 @@ def authenticated_users(func):
 
     @wraps(func)
     def func_wrapper(*args, **kwargs):
+        """It is recommended to always pass request as a named argument."""
         if kwargs.get('request'):
             request = kwargs.get('request')
         elif args:
@@ -71,7 +72,6 @@ def deny_all(*args, **kwargs):
 
     This permission on it's own is not useful as *nobody* will ever be able
     to access a view protected with it.
-
     """
     return False
 
@@ -83,7 +83,6 @@ def allow_superuser(request, *args, **kwargs):
 
     This permission allows access to any user that has the `is_superuser`
     flag set.
-
     """
     return request.user.is_superuser
 
@@ -94,7 +93,6 @@ def allow_staff(request, *args, **kwargs):
     Staff access.
 
     This permission allows access to any user that has the `is_staff` flag set.
-
     """
     return request.user.is_staff
 
@@ -106,7 +104,6 @@ def allow_authenticated(request, *args, **kwargs):
 
     This permission class will deny permission to any unauthenticated user,
     and allow permission to any authenticated user.
-
     """
     return True
 
@@ -117,7 +114,6 @@ def allow_all(*args, **kwargs):
 
     This permission will allow unrestricted access, regardless of
     the request being authenticated or unauthenticated.
-
     """
     return True
 
@@ -127,6 +123,9 @@ def allow_authorized_key(request, view, *args, **kwargs):
     The request must contain a authentication header that matches one of the API Keys.
 
     The API Keys are set in the authorized_keys attribute of the view.
+    This is useful for authorization between services that communicate via drf
+    where you'd rather have the keys as configuration and connect without
+    authentication.
     """
     key = request.META.get('HTTP_AUTHORIZATION')
     if not isinstance(view.authorized_keys, (tuple, list)):
@@ -146,7 +145,7 @@ class DABasePermission(permissions.BasePermission):
     permission checks specified in the `rw_permissions` tuple.
 
     It does not check if it is a read or a write access and treat
-    **all** access methods in the same way
+    **all** access methods in the same way.
     """
 
     message = 'Permission denied.'
@@ -209,7 +208,7 @@ class DARWBasePermission(DABasePermission):
 
         If None of these permissions allows access then the permissions in
         `read_permissions` are checked for the (`options`, `head`, `get`)
-        methods
+        methods.
 
         For write access (`post`, `put`, `patch`, `delete`) methods
         all permissions in the `write_permissions` methods are checked.
@@ -288,7 +287,6 @@ class DACrudBasePermission(DABasePermission):
 
     For delete access (`delete`) all permissions in the `delete_permissions`
     are checked.
-
     """
 
     read_permissions = (deny_all,)
@@ -315,7 +313,6 @@ class DACrudBasePermission(DABasePermission):
         `change_permissions` are checked.
         For the `delete` method all permissions in the `delete_permissions`
         are checked.
-
         """
         if super(DACrudBasePermission, self).has_permission(
                 request=request, view=view):
