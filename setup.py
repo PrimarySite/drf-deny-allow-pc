@@ -1,8 +1,10 @@
-from setuptools import setup, find_packages
-import sys
 import os
+import sys
 
-version = '0.2'
+from setuptools import find_packages
+from setuptools import setup
+
+version = '0.3'
 
 setup(name='drfdapc',
       version=version,
