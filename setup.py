@@ -4,7 +4,7 @@ import sys
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.3'
+version = '0.4'
 
 setup(name='drfdapc',
       version=version,
@@ -12,12 +12,16 @@ setup(name='drfdapc',
       long_description=(open("README.rst").read() + "\n"),
       classifiers=[
           'Framework :: Django',
-          'Framework :: Django :: 1.6',
           'Framework :: Django :: 1.8',
-          'Programming Language :: Python :: 2.7'
-          'Programming Language :: Python :: 2'
-          'Programming Language :: Python :: 3'
-          'Programming Language :: Python :: 3.4'
+          'Framework :: Django :: 1.11',
+          'Framework :: Django :: 2.0',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Development Status :: 5 - Production/Stable',
       ],  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       keywords='django permission restframework',
       author='Christian Ledermann',

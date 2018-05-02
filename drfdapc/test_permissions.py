@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
+
 try:
     from unittest import mock
 except ImportError:
     import mock
+
+# Django
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+
+# 3rd-party
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITransactionTestCase
 
+# Local
 from .permissions import DABasePermission
 from .permissions import DACrudBasePermission
 from .permissions import DARWBasePermission

@@ -25,11 +25,16 @@ If you only need view level security you may set
 when `.get_object()` is called through REST framework's view machinery.
 
 """
+# Future
 from __future__ import unicode_literals
 
+# Standard Library
 from functools import wraps
 
+# Django
 from django.core.exceptions import ImproperlyConfigured
+
+# 3rd-party
 from rest_framework import permissions
 
 
