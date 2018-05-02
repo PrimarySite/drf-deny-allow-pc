@@ -53,8 +53,16 @@ def authenticated_users(func):
             raise TypeError(
                 'authenticated_users() missing 1 required argument: `request`')
 
-        if not(request.user and request.user.is_authenticated()):
+        if not request.user:
             return False
+
+        if callable(request.user.is_authenticated):
+            # TODO: Remove this when support for django 1.8 is dropped
+            if not request.user.is_authenticated():
+                return False
+        else:
+             if not request.user.is_authenticated:
+                return False
 
         return func(*args, **kwargs)
 
