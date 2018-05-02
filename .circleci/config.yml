@@ -84,7 +84,7 @@ jobs:
         - run:
             name: Django 1.11 with Python 2.7
             command: |
-              python3 -m venv venv
+              virtualenv venv
               source venv/bin/activate
               pip install -r tests/requirements-dj111.txt
               coverage run runtests.py
@@ -99,7 +99,7 @@ jobs:
         - run:
             name: Django 1.8 with Python 2.7
             command: |
-              python3 -m venv venv
+              virtualenv venv
               source venv/bin/activate
               pip install -r tests/requirements-dj18.txt
               coverage run runtests.py
