@@ -1,6 +1,5 @@
 version: 2
 jobs:
-
   test-static:
       docker:
         - image: circleci/python:3.6
@@ -131,3 +130,4 @@ workflows:
       - test-django-1.11-py-3.4
       - test-django-1.11-py-2.7
       - test-django-1.8-py-2.7
+      - test-static
