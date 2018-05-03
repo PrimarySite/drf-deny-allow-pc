@@ -1,5 +1,20 @@
 version: 2
 jobs:
+
+  test-static:
+      docker:
+        - image: circleci/python:3.6
+          user: circleci
+      steps:
+        - checkout
+        - run:
+            name: Latest Django with Python 3.6
+            command: |
+              python3 -m venv venv
+              source venv/bin/activate
+              pip install -r tests/requirements-flake8.txt
+              flake8 drfdapc
+
   test-django-latest-py-3.6:
       docker:
         - image: circleci/python:3.6
