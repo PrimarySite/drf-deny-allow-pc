@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
 
-try:
+try:  # pragma: no cover
     from unittest import mock
-except ImportError:
+except ImportError:  # pragma: no cover
     import mock
 
 # Django
