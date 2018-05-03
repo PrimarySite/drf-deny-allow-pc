@@ -30,7 +30,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-2.0-py-3.6:
       docker:
@@ -60,7 +59,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements-dj111.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-1.11-py-3.5:
       docker:
@@ -75,7 +73,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements-dj111.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-1.11-py-3.4:
       docker:
@@ -90,7 +87,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements-dj111.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-1.11-py-2.7:
       docker:
@@ -105,7 +101,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements-dj111.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-1.8-py-2.7:
       docker:
@@ -120,7 +115,6 @@ jobs:
               source venv/bin/activate
               pip install -r tests/requirements-dj18.txt
               coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
 workflows:
   version: 2
