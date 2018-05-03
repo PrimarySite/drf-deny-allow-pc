@@ -7,12 +7,15 @@ jobs:
       steps:
         - checkout
         - run:
-            name: Latest Django with Python 3.6
+            name: Flake8 and complexity
             command: |
               python3 -m venv venv
               source venv/bin/activate
               pip install -r tests/requirements-flake8.txt
               flake8 drfdapc
+              radon cc --min B drfdapc
+              radon mi --min B drfdapc
+              lizard -l python -w drfdapc
 
   test-django-latest-py-3.6:
       docker:
