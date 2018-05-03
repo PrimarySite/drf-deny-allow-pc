@@ -37,6 +37,6 @@ setup(name='drfdapc',
           'djangorestframework',
       ],
       entry_points="""
-    # -*- Entry points: -*-
-    """,
+        # -*- Entry points: -*-
+        """,
       )
