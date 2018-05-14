@@ -25,26 +25,33 @@ If you only need view level security you may set
 when `.get_object()` is called through REST framework's view machinery.
 
 """
+# Future
 from __future__ import unicode_literals
 
+# Standard Library
 from functools import wraps
 
+# Django
 from django.core.exceptions import ImproperlyConfigured
+
+# 3rd-party
 from rest_framework import permissions
 
 
 def authenticated_users(func):
     """
-    This decorator is used to abstract common authentication checking
-    functionality out of permission checks.
+    Abstract common authentication checks as a decorator.
 
     `request` is required either as the first positional argument
     or as a Keyword argument
     """
-
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        """It is recommended to always pass request as a named argument."""
+        """
+        Determine if the user is authenticated.
+
+        It is recommended to always pass the request as a named argument.
+        """
         if kwargs.get('request'):
             request = kwargs.get('request')
         elif args:
@@ -53,8 +60,16 @@ def authenticated_users(func):
             raise TypeError(
                 'authenticated_users() missing 1 required argument: `request`')
 
-        if not(request.user and request.user.is_authenticated()):
+        if not request.user:
             return False
+
+        if callable(request.user.is_authenticated):
+            # TODO: Remove this when support for django 1.8 is dropped
+            if not request.user.is_authenticated():
+                return False
+        else:
+            if not request.user.is_authenticated:
+                return False
 
         return func(*args, **kwargs)
 
@@ -90,7 +105,7 @@ def allow_superuser(request, *args, **kwargs):
 @authenticated_users
 def allow_staff(request, *args, **kwargs):
     """
-    Staff access.
+    Allow staff access.
 
     This permission allows access to any user that has the `is_staff` flag set.
     """
@@ -100,7 +115,7 @@ def allow_staff(request, *args, **kwargs):
 @authenticated_users
 def allow_authenticated(request, *args, **kwargs):
     """
-    Authenticated user access.
+    Allow authenticated users.
 
     This permission class will deny permission to any unauthenticated user,
     and allow permission to any authenticated user.
@@ -120,6 +135,8 @@ def allow_all(*args, **kwargs):
 
 def allow_authorized_key(request, view, *args, **kwargs):
     """
+    Allow access with a shared secret.
+
     The request must contain a authentication header that matches one of the API Keys.
 
     The API Keys are set in the authorized_keys attribute of the view.
@@ -137,7 +154,6 @@ def allow_authorized_key(request, view, *args, **kwargs):
 
 
 class DABasePermission(permissions.BasePermission):
-
     """
     Deny Allow Base Permisson.
 
@@ -154,6 +170,8 @@ class DABasePermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """
+        Check permissions.
+
         Before running the main body of the view each permission in
         `rw_permissions` is checked.
 
@@ -184,7 +202,6 @@ class DABasePermission(permissions.BasePermission):
 
 
 class DARWBasePermission(DABasePermission):
-
     """
     Deny Allow Base Read/Write specific Permisson.
 
@@ -203,15 +220,16 @@ class DARWBasePermission(DABasePermission):
 
     def has_permission(self, request, view):
         """
+        Check permissions.
+
         Before running the main body of the view each permission in
         `rw_permissions` is checked.
-
         If None of these permissions allows access then the permissions in
         `read_permissions` are checked for the (`options`, `head`, `get`)
         methods.
-
         For write access (`post`, `put`, `patch`, `delete`) methods
         all permissions in the `write_permissions` methods are checked.
+
         """
         if super(DARWBasePermission, self).has_permission(
                 request=request, view=view):
@@ -246,7 +264,6 @@ class DARWBasePermission(DABasePermission):
         `.check_object_permissions(request, obj)` method on the view at the
         point at which you've retrieved the object.
         """
-
         if super(DARWBasePermission, self).has_object_permission(
                 request=request, view=view, obj=obj):
             # Check permissions for all read or write requests
@@ -265,7 +282,6 @@ class DARWBasePermission(DABasePermission):
 
 
 class DACrudBasePermission(DABasePermission):
-
     """
     Deny Allow Base Read/Write specific Permisson.
 
@@ -300,19 +316,20 @@ class DACrudBasePermission(DABasePermission):
 
     def has_permission(self, request, view):
         """
+        Check permissions.
+
         Before running the main body of the view each permission in
         `rw_permissions` is checked.
-
         If None of these permissions allows access then the permissions in
         `read_permissions` are checked for the (`options`, `head`, `get`)
-        methods
-
+        methods.
         For the `post` method all permissions in the `add_permissions` are
         checked.
         For `put` and `patch` methods all permissions in the
         `change_permissions` are checked.
         For the `delete` method all permissions in the `delete_permissions`
         are checked.
+
         """
         if super(DACrudBasePermission, self).has_permission(
                 request=request, view=view):

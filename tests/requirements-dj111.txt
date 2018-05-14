@@ -1,4 +1,5 @@
-Django
+Django<2.0
 djangorestframework
 coverage
 codecov
+mock

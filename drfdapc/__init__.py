@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Package Module for drfdapc"""
+"""Package Module for drfdapc."""
+# flake8: noqa
+
 from .permissions import DABasePermission
 from .permissions import DACrudBasePermission
 from .permissions import DARWBasePermission

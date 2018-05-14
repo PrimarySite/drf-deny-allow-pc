@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
 """Test DRF Deny All - Allow Specific Permission Classes."""
-import mock
+
+try:  # pragma: no cover
+    from unittest import mock
+except ImportError:  # pragma: no cover
+    import mock
+
+# Django
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+
+# 3rd-party
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITransactionTestCase
 
+# Local
 from .permissions import DABasePermission
 from .permissions import DACrudBasePermission
 from .permissions import DARWBasePermission
@@ -19,7 +28,6 @@ from .permissions import deny_all
 
 
 class BaseTestCase(APITransactionTestCase):
-
     """Common Functionality for all Test cases."""
 
     def setUp(self):
@@ -34,7 +42,7 @@ class BaseTestCase(APITransactionTestCase):
         for model in models:
             model.objects.all().delete()
 
-    def has_access(self, request, view=None, obj=None, *args, **kwargs):
+    def has_access(self, request, view=None, obj=None, *args, **kwargs):  # noqa: D401
         """A Dummy Object Permission for easy to mock objects."""
         try:
             return bool(obj.allows_access)
@@ -138,7 +146,6 @@ class BaseTestCase(APITransactionTestCase):
 
 
 class PermissionFunctionTestCase(BaseTestCase):
-
     """Test Permission functions."""
 
     def test_deny_all(self):
@@ -241,7 +248,7 @@ class PermissionFunctionTestCase(BaseTestCase):
             allow_authorized_key(request, view)
 
     def test_has_access(self):
-        """Make sure our Object Test Function works as expected"""
+        """Make sure our Object Test Function works as expected."""
         obj = mock.Mock()
         # allow access
         obj.allows_access = True
@@ -257,7 +264,6 @@ class PermissionFunctionTestCase(BaseTestCase):
 
 
 class DABasePermissionTestCase(BaseTestCase):
-
     """Test DABasePermission."""
 
     permission = DABasePermission
@@ -344,7 +350,6 @@ class DABasePermissionTestCase(BaseTestCase):
 
 
 class DARWBasePermissionTestCase(BaseTestCase):
-
     """Test DARWBasePermission."""
 
     permission = DARWBasePermission
@@ -532,11 +537,10 @@ class DARWBasePermissionTestCase(BaseTestCase):
 
 
 class DACrudBasePermissionTestCase(BaseTestCase):
-
     """
     Test DACrudBasePermission.
 
-    We Test here only the combination of anonymous, staff and superuser
+    We test here only the combination of anonymous, staff and superuser
     as permutations are covered in the above test cases.
     """
 
