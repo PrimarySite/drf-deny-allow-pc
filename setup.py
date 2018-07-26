@@ -4,7 +4,7 @@ import sys
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.4'
+version = '0.5'
 
 setup(name='drfdapc',
       version=version,
@@ -12,7 +12,6 @@ setup(name='drfdapc',
       long_description=(open("README.rst").read() + "\n"),
       classifiers=[
           'Framework :: Django',
-          'Framework :: Django :: 1.8',
           'Framework :: Django :: 1.11',
           'Framework :: Django :: 2.0',
           'Programming Language :: Python :: 2',
