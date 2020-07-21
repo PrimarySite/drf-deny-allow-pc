@@ -4,7 +4,7 @@ flake8-builtins
 flake8-coding
 flake8-commas
 flake8-debugger
-flake8-docstrings
+flake8-docstrings==1.5.0
 flake8-isort
 flake8-pep3101
 flake8-quotes
