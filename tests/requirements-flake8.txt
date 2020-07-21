@@ -9,7 +9,7 @@ flake8-isort
 flake8-pep3101
 flake8-quotes
 flake8-string-format
-flake8
+flake8==3.8.3
 isort
 lizard
 pep257
