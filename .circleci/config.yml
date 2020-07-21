@@ -1,115 +1,71 @@
+---
 version: 2
 jobs:
   test-static:
-      docker:
-        - image: circleci/python:3.6
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Flake8 and complexity
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-flake8.txt
-              flake8 drfdapc
-              radon cc --min B drfdapc
-              radon mi --min B drfdapc
-              lizard -l python -w drfdapc
+    docker:
+      - image: circleci/python:3.7
+        user: circleci
+    steps:
+      - checkout
+      - run:
+          name: Linting
+          command: |
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements/flake8.txt
+            flake8 drfdapc
+            black -l 99 --check drfdapc tests
+            bandit -r drfdapc
+            yamllint .circleci
+      - run:
+          name: pip-check
+          command: |
+             pip-check -a
+      - run:
+          name: Complexity
+          command: |
+            echo '----------Cyclomatic complexity -----------'
+            radon cc --min B --average --total-average drfdapc
+            echo '----------Maintainability Index-----------'
+            radon mi --min B  drfdapc
+            echo '-----------Lizard Cyclomatic Complexity for python---------'
+            lizard  -l python -w drfdapc
 
-  test-django-latest-py-3.6:
-      docker:
-        - image: circleci/python:3.6
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Latest Django with Python 3.6
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements.txt
-              coverage run runtests.py
-
-  test-django-2.0-py-3.6:
-      docker:
-        - image: circleci/python:3.6
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Django 2.0 with Python 3.6
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-dj20.txt
-              coverage run runtests.py
-              codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
+  test-django-2.2-py-3.7:
+    docker:
+      - image: circleci/python:3.7
+        user: circleci
+    steps:
+      - checkout
+      - run:
+          name: Django 2.2 with Python 3.7
+          command: |
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements/requirements-dj22.txt
+            pytest drfdapc --cov=drdapc
+            codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
   test-django-1.11-py-3.6:
-      docker:
-        - image: circleci/python:3.6
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Django 1.11 with Python 3.6
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-dj111.txt
-              coverage run runtests.py
+    docker:
+      - image: circleci/python:3.6
+        user: circleci
+    steps:
+      - checkout
+      - run:
+          name: Django 1.11 with Python 3.6
+          command: |
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements/requirements-dj111.txt
+            pytest drfdapc --cov=drdapc
 
-  test-django-1.11-py-3.5:
-      docker:
-        - image: circleci/python:3.5
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Django 1.11 with Python 3.5
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-dj111.txt
-              coverage run runtests.py
-
-  test-django-1.11-py-3.4:
-      docker:
-        - image: circleci/python:3.4
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Django 1.11 with Python 3.4
-            command: |
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-dj111.txt
-              coverage run runtests.py
-
-  test-django-1.11-py-2.7:
-      docker:
-        - image: circleci/python:2.7
-          user: circleci
-      steps:
-        - checkout
-        - run:
-            name: Django 1.11 with Python 2.7
-            command: |
-              virtualenv venv
-              source venv/bin/activate
-              pip install -r tests/requirements-dj111.txt
-              coverage run runtests.py
 
 workflows:
   version: 2
   build-and-test:
     jobs:
-      - test-django-latest-py-3.6
-      - test-django-2.0-py-3.6
+      - test-django-2.2-py-3.7
       - test-django-1.11-py-3.6
-      - test-django-1.11-py-3.5
-      - test-django-1.11-py-3.4
-      - test-django-1.11-py-2.7
       - test-static
+...

@@ -1,4 +1,0 @@
-Django<2.1
-djangorestframework
-coverage
-codecov
