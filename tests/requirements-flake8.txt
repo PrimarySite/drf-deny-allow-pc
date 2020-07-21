@@ -3,7 +3,7 @@ flake8-blind-except
 flake8-builtins
 flake8-coding
 flake8-commas
-flake8-debugger
+flake8-debugger==3.2.1
 flake8-docstrings
 flake8-isort
 flake8-pep3101
