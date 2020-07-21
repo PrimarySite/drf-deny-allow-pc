@@ -20,10 +20,12 @@ jobs:
       - run:
           name: pip-check
           command: |
-             pip-check -a
+            source venv/bin/activate
+            pip-check -a
       - run:
           name: Complexity
           command: |
+            source venv/bin/activate
             echo '----------Cyclomatic complexity -----------'
             radon cc --min B --average --total-average drfdapc
             echo '----------Maintainability Index-----------'
