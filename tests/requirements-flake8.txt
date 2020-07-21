@@ -18,4 +18,4 @@ pep8
 pip-check
 pycodestyle<2.4.0
 pyflakes
-radon
+radon==4.1.0
