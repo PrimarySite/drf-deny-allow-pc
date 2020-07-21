@@ -27,18 +27,24 @@ when `.get_object()` is called through REST framework's view machinery.
 """
 # Standard Library
 from functools import wraps
+from typing import Any
+from typing import Callable
+from typing import TypeVar
+from typing import cast
 
 # Django
 from django.core.exceptions import ImproperlyConfigured
-from rest_framework.request import Request
 from django.db.models import Model
 from django.views import View
 
 # 3rd-party
 from rest_framework import permissions
+from rest_framework.request import Request
+
+function = TypeVar("function", bound=Callable[..., bool])
 
 
-def authenticated_users(func):
+def authenticated_users(func: function) -> function:
     """
     Abstract common authentication checks as a decorator.
 
@@ -47,7 +53,7 @@ def authenticated_users(func):
     """
 
     @wraps(func)
-    def func_wrapper(*args, **kwargs):
+    def func_wrapper(*args: Any, **kwargs: Any) -> bool:
         """
         Determine if the user is authenticated.
 
@@ -60,15 +66,15 @@ def authenticated_users(func):
         else:
             raise TypeError("authenticated_users() missing 1 required argument: `request`")
 
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated:  # type: ignore
             return False
 
         return func(*args, **kwargs)
 
-    return func_wrapper
+    return cast(function, func_wrapper)
 
 
-def deny_all(*args, **kwargs) -> bool:
+def deny_all(*args: Any, **kwargs: Any) -> bool:
     """
     Deny Access to everyone.
 
@@ -84,7 +90,7 @@ def deny_all(*args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_superuser(request: Request, *args, **kwargs) -> bool:
+def allow_superuser(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Superuser access.
 
@@ -95,7 +101,7 @@ def allow_superuser(request: Request, *args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_staff(request: Request, *args, **kwargs) -> bool:
+def allow_staff(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Allow staff access.
 
@@ -105,7 +111,7 @@ def allow_staff(request: Request, *args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_authenticated(request: Request, *args, **kwargs) -> bool:
+def allow_authenticated(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Allow authenticated users.
 
@@ -115,7 +121,7 @@ def allow_authenticated(request: Request, *args, **kwargs) -> bool:
     return True
 
 
-def allow_all(*args, **kwargs) -> bool:
+def allow_all(*args: Any, **kwargs: Any) -> bool:
     """
     Allow anyone.
 
@@ -125,7 +131,7 @@ def allow_all(*args, **kwargs) -> bool:
     return True
 
 
-def allow_authorized_key(request: Request, view: View, *args, **kwargs) -> bool:
+def allow_authorized_key(request: Request, view: View, *args: Any, **kwargs: Any) -> bool:
     """
     Allow access with a shared secret.
 
@@ -137,9 +143,9 @@ def allow_authorized_key(request: Request, view: View, *args, **kwargs) -> bool:
     authentication.
     """
     key = request.META.get("HTTP_AUTHORIZATION")
-    if not isinstance(view.authorized_keys, (tuple, list)):
+    if not isinstance(view.authorized_keys, (tuple, list)):  # type: ignore
         raise ImproperlyConfigured("authorized_keys must be a tuple or a list")
-    if key in view.authorized_keys:
+    if key in view.authorized_keys:  # type: ignore
         return True
     return False
 

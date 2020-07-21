@@ -23,6 +23,11 @@ jobs:
             source venv/bin/activate
             pip-check -a
       - run:
+          name: mypy
+          command: |
+            source venv/bin/activate
+            mypy drfdapc
+      - run:
           name: Complexity
           command: |
             source venv/bin/activate
