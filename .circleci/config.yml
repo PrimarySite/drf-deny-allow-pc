@@ -13,6 +13,7 @@ jobs:
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements/flake8.txt
+            pip install -r requirements/requirements-dj22.txt
             flake8 drfdapc
             black -l 99 --check drfdapc
             bandit -r drfdapc
