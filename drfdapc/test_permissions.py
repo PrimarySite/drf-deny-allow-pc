@@ -241,7 +241,7 @@ class PermissionFunctionTestCase(BaseTestCase):
         view = mock.Mock()
         view.authorized_keys = "aa11bb22"
         request = self.factory.get("/", HTTP_AUTHORIZATION="aa11bb22")
-        with self.assertRaises(ImproperlyConfigured):   # noqa: PT009, T003
+        with self.assertRaises(ImproperlyConfigured):  # noqa: PT009, T003
             allow_authorized_key(request, view)
 
     def test_has_access(self):
