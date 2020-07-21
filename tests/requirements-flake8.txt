@@ -7,7 +7,7 @@ flake8-debugger
 flake8-docstrings
 flake8-isort
 flake8-pep3101
-flake8-quotes
+flake8-quotes==3.2.0
 flake8-string-format
 flake8
 isort
