@@ -27,12 +27,12 @@ when `.get_object()` is called through REST framework's view machinery.
 """
 # Standard Library
 from functools import wraps
-from unittest.mock import Mock
 
 # Django
 from django.core.exceptions import ImproperlyConfigured
+from rest_framework.request import Request
 from django.db.models import Model
-from django.http import HttpRequest
+from django.views import View
 
 # 3rd-party
 from rest_framework import permissions
@@ -84,7 +84,7 @@ def deny_all(*args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_superuser(request: HttpRequest, *args, **kwargs) -> bool:
+def allow_superuser(request: Request, *args, **kwargs) -> bool:
     """
     Superuser access.
 
@@ -95,7 +95,7 @@ def allow_superuser(request: HttpRequest, *args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_staff(request: HttpRequest, *args, **kwargs) -> bool:
+def allow_staff(request: Request, *args, **kwargs) -> bool:
     """
     Allow staff access.
 
@@ -105,7 +105,7 @@ def allow_staff(request: HttpRequest, *args, **kwargs) -> bool:
 
 
 @authenticated_users
-def allow_authenticated(request: HttpRequest, *args, **kwargs) -> bool:
+def allow_authenticated(request: Request, *args, **kwargs) -> bool:
     """
     Allow authenticated users.
 
@@ -125,7 +125,7 @@ def allow_all(*args, **kwargs) -> bool:
     return True
 
 
-def allow_authorized_key(request: HttpRequest, view: Mock, *args, **kwargs) -> bool:
+def allow_authorized_key(request: Request, view: View, *args, **kwargs) -> bool:
     """
     Allow access with a shared secret.
 
@@ -159,7 +159,7 @@ class DABasePermission(permissions.BasePermission):
     rw_permissions = (deny_all,)
     object_rw_permissions = (deny_all,)
 
-    def has_permission(self, request: HttpRequest, view: None) -> bool:
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -173,7 +173,7 @@ class DABasePermission(permissions.BasePermission):
                 return True
         return False
 
-    def has_object_permission(self, request: HttpRequest, view: None, obj: Mock) -> bool:
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -209,7 +209,7 @@ class DARWBasePermission(DABasePermission):
     object_read_permissions = (deny_all,)
     object_write_permissions = (deny_all,)
 
-    def has_permission(self, request: HttpRequest, view: None) -> bool:
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -237,7 +237,7 @@ class DARWBasePermission(DABasePermission):
                     return True
         return False
 
-    def has_object_permission(self, request: HttpRequest, view: None, obj: Mock) -> bool:
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -305,7 +305,7 @@ class DACrudBasePermission(DABasePermission):
     object_change_permissions = (deny_all,)
     object_delete_permissions = (deny_all,)
 
-    def has_permission(self, request: HttpRequest, view: None) -> bool:
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -354,7 +354,7 @@ class DACrudBasePermission(DABasePermission):
                     return True
         return False
 
-    def has_object_permission(self, request: HttpRequest, view: None, obj: Mock) -> bool:
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
