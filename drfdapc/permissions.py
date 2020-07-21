@@ -252,7 +252,7 @@ class DARWBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
         if super(DARWBasePermission, self).has_object_permission(
-            request=request, view=view, obj=obj
+            request=request, view=view, obj=obj,
         ):
             # Check permissions for all read or write requests
             return True
@@ -370,7 +370,7 @@ class DACrudBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
         if super(DACrudBasePermission, self).has_object_permission(
-            request=request, view=view, obj=obj
+            request=request, view=view, obj=obj,
         ):
             # Check permissions for all read or write requests
             return True

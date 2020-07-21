@@ -215,7 +215,7 @@ class PermissionFunctionTestCase(BaseTestCase):
 
     def test_allow_authenticated_no_request(self):
         """Without a request we cannot get the user."""
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError):  # noqa: PT009, T003
             allow_authenticated()
 
     def test_allow_authorized_key_valid_key(self):
@@ -241,7 +241,7 @@ class PermissionFunctionTestCase(BaseTestCase):
         view = mock.Mock()
         view.authorized_keys = "aa11bb22"
         request = self.factory.get("/", HTTP_AUTHORIZATION="aa11bb22")
-        with self.assertRaises(ImproperlyConfigured):
+        with self.assertRaises(ImproperlyConfigured):   # noqa: PT009, T003
             allow_authorized_key(request, view)
 
     def test_has_access(self):
