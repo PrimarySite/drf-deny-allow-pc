@@ -27,9 +27,11 @@ when `.get_object()` is called through REST framework's view machinery.
 """
 # Standard Library
 from functools import wraps
+from unittest.mock import Mock
 
 # Django
 from django.core.exceptions import ImproperlyConfigured
+from django.core.handlers.wsgi import WSGIRequest
 
 # 3rd-party
 from rest_framework import permissions
@@ -65,7 +67,7 @@ def authenticated_users(func):
     return func_wrapper
 
 
-def deny_all(*args, **kwargs):
+def deny_all(*args, **kwargs) -> bool:
     """
     Deny Access to everyone.
 
@@ -81,7 +83,7 @@ def deny_all(*args, **kwargs):
 
 
 @authenticated_users
-def allow_superuser(request, *args, **kwargs):
+def allow_superuser(request: WSGIRequest, *args, **kwargs) -> bool:
     """
     Superuser access.
 
@@ -92,7 +94,7 @@ def allow_superuser(request, *args, **kwargs):
 
 
 @authenticated_users
-def allow_staff(request, *args, **kwargs):
+def allow_staff(request: WSGIRequest, *args, **kwargs) -> bool:
     """
     Allow staff access.
 
@@ -102,7 +104,7 @@ def allow_staff(request, *args, **kwargs):
 
 
 @authenticated_users
-def allow_authenticated(request, *args, **kwargs):
+def allow_authenticated(request: WSGIRequest, *args, **kwargs) -> bool:
     """
     Allow authenticated users.
 
@@ -112,7 +114,7 @@ def allow_authenticated(request, *args, **kwargs):
     return True
 
 
-def allow_all(*args, **kwargs):
+def allow_all(*args, **kwargs) -> bool:
     """
     Allow anyone.
 
@@ -122,7 +124,7 @@ def allow_all(*args, **kwargs):
     return True
 
 
-def allow_authorized_key(request, view, *args, **kwargs):
+def allow_authorized_key(request: WSGIRequest, view: Mock, *args, **kwargs) -> bool:
     """
     Allow access with a shared secret.
 
@@ -156,7 +158,7 @@ class DABasePermission(permissions.BasePermission):
     rw_permissions = (deny_all,)
     object_rw_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: WSGIRequest, view: None) -> bool:
         """
         Check permissions.
 
@@ -170,7 +172,7 @@ class DABasePermission(permissions.BasePermission):
                 return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: WSGIRequest, view: None, obj: Mock) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -206,7 +208,7 @@ class DARWBasePermission(DABasePermission):
     object_read_permissions = (deny_all,)
     object_write_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: WSGIRequest, view: None) -> bool:
         """
         Check permissions.
 
@@ -234,7 +236,7 @@ class DARWBasePermission(DABasePermission):
                     return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: WSGIRequest, view: None, obj: Mock) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -302,7 +304,7 @@ class DACrudBasePermission(DABasePermission):
     object_change_permissions = (deny_all,)
     object_delete_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: WSGIRequest, view: None) -> bool:
         """
         Check permissions.
 
@@ -351,7 +353,7 @@ class DACrudBasePermission(DABasePermission):
                     return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: WSGIRequest, view: None, obj: Mock) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
