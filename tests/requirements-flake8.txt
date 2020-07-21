@@ -13,7 +13,7 @@ flake8
 isort
 lizard
 pep257
-pep8-naming
+pep8-naming==0.11.1
 pep8
 pip-check
 pycodestyle<2.4.0
