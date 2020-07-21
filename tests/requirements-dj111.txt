@@ -1,5 +1,5 @@
 Django<2.0
 djangorestframework
-coverage
+coverage==5.2
 codecov
 mock
