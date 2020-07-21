@@ -11,7 +11,7 @@ flake8-quotes
 flake8-string-format
 flake8
 isort
-lizard
+lizard==1.17.4
 pep257
 pep8-naming
 pep8
