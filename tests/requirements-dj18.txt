@@ -1,5 +1,5 @@
 Django<1.9
-djangorestframework<3.7
+djangorestframework==3.11.1
 coverage
 codecov
 mock
