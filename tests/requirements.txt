@@ -1,4 +1,4 @@
 Django
-djangorestframework
+djangorestframework==3.11.1
 coverage
 codecov
