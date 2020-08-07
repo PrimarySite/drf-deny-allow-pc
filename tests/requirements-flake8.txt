@@ -10,7 +10,7 @@ flake8-pep3101
 flake8-quotes
 flake8-string-format
 flake8
-isort
+isort==5.3.2
 lizard
 pep257
 pep8-naming
