@@ -25,50 +25,56 @@ If you only need view level security you may set
 when `.get_object()` is called through REST framework's view machinery.
 
 """
-# Future
-from __future__ import unicode_literals
-
 # Standard Library
 from functools import wraps
+from typing import Any
+from typing import Callable
+from typing import TypeVar
+from typing import cast
 
 # Django
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models import Model
+from django.views import View
 
 # 3rd-party
 from rest_framework import permissions
+from rest_framework.request import Request
+
+function = TypeVar("function", bound=Callable[..., bool])
 
 
-def authenticated_users(func):
+def authenticated_users(func: function) -> function:
     """
     Abstract common authentication checks as a decorator.
 
     `request` is required either as the first positional argument
     or as a Keyword argument
     """
+
     @wraps(func)
-    def func_wrapper(*args, **kwargs):
+    def func_wrapper(*args: Any, **kwargs: Any) -> bool:
         """
         Determine if the user is authenticated.
 
         It is recommended to always pass the request as a named argument.
         """
-        if kwargs.get('request'):
-            request = kwargs.get('request')
+        if kwargs.get("request"):
+            request = kwargs.get("request")
         elif args:
             request = args[0]
         else:
-            raise TypeError(
-                'authenticated_users() missing 1 required argument: `request`')
+            raise TypeError("authenticated_users() missing 1 required argument: `request`")
 
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated:  # type: ignore
             return False
 
         return func(*args, **kwargs)
 
-    return func_wrapper
+    return cast(function, func_wrapper)
 
 
-def deny_all(*args, **kwargs):
+def deny_all(*args: Any, **kwargs: Any) -> bool:
     """
     Deny Access to everyone.
 
@@ -84,7 +90,7 @@ def deny_all(*args, **kwargs):
 
 
 @authenticated_users
-def allow_superuser(request, *args, **kwargs):
+def allow_superuser(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Superuser access.
 
@@ -95,7 +101,7 @@ def allow_superuser(request, *args, **kwargs):
 
 
 @authenticated_users
-def allow_staff(request, *args, **kwargs):
+def allow_staff(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Allow staff access.
 
@@ -105,7 +111,7 @@ def allow_staff(request, *args, **kwargs):
 
 
 @authenticated_users
-def allow_authenticated(request, *args, **kwargs):
+def allow_authenticated(request: Request, *args: Any, **kwargs: Any) -> bool:
     """
     Allow authenticated users.
 
@@ -115,7 +121,7 @@ def allow_authenticated(request, *args, **kwargs):
     return True
 
 
-def allow_all(*args, **kwargs):
+def allow_all(*args: Any, **kwargs: Any) -> bool:
     """
     Allow anyone.
 
@@ -125,7 +131,7 @@ def allow_all(*args, **kwargs):
     return True
 
 
-def allow_authorized_key(request, view, *args, **kwargs):
+def allow_authorized_key(request: Request, view: View, *args: Any, **kwargs: Any) -> bool:
     """
     Allow access with a shared secret.
 
@@ -136,11 +142,10 @@ def allow_authorized_key(request, view, *args, **kwargs):
     where you'd rather have the keys as configuration and connect without
     authentication.
     """
-    key = request.META.get('HTTP_AUTHORIZATION')
-    if not isinstance(view.authorized_keys, (tuple, list)):
-        raise ImproperlyConfigured(
-            'authorized_keys must be a tuple or a list')
-    if key in view.authorized_keys:
+    key = request.META.get("HTTP_AUTHORIZATION")
+    if not isinstance(view.authorized_keys, (tuple, list)):  # type: ignore
+        raise ImproperlyConfigured("authorized_keys must be a tuple or a list")
+    if key in view.authorized_keys:  # type: ignore
         return True
     return False
 
@@ -156,11 +161,11 @@ class DABasePermission(permissions.BasePermission):
     **all** access methods in the same way.
     """
 
-    message = 'Permission denied.'
+    message = "Permission denied."
     rw_permissions = (deny_all,)
     object_rw_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -174,7 +179,7 @@ class DABasePermission(permissions.BasePermission):
                 return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -210,7 +215,7 @@ class DARWBasePermission(DABasePermission):
     object_read_permissions = (deny_all,)
     object_write_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -223,8 +228,7 @@ class DARWBasePermission(DABasePermission):
         all permissions in the `write_permissions` methods are checked.
 
         """
-        if super(DARWBasePermission, self).has_permission(
-                request=request, view=view):
+        if super(DARWBasePermission, self).has_permission(request=request, view=view):
             # Check permissions for all read or write requests
             return True
         if request.method in permissions.SAFE_METHODS:
@@ -239,7 +243,7 @@ class DARWBasePermission(DABasePermission):
                     return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -257,7 +261,8 @@ class DARWBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
         if super(DARWBasePermission, self).has_object_permission(
-                request=request, view=view, obj=obj):
+            request=request, view=view, obj=obj,
+        ):
             # Check permissions for all read or write requests
             return True
         if request.method in permissions.SAFE_METHODS:
@@ -306,7 +311,7 @@ class DACrudBasePermission(DABasePermission):
     object_change_permissions = (deny_all,)
     object_delete_permissions = (deny_all,)
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check permissions.
 
@@ -323,8 +328,7 @@ class DACrudBasePermission(DABasePermission):
         are checked.
 
         """
-        if super(DACrudBasePermission, self).has_permission(
-                request=request, view=view):
+        if super(DACrudBasePermission, self).has_permission(request=request, view=view):
             # Check permissions for all read or write requests
             return True
 
@@ -335,28 +339,28 @@ class DACrudBasePermission(DABasePermission):
                     return True
             return False
 
-        elif request.method in ['PUT', 'PATCH']:
+        elif request.method in ["PUT", "PATCH"]:
             # Update
             for permission in self.change_permissions:
                 if permission(request=request, view=view):
                     return True
             return False
 
-        elif request.method == 'POST':
+        elif request.method == "POST":
             # Create
             for permission in self.add_permissions:
                 if permission(request=request, view=view):
                     return True
             return False
 
-        elif request.method == 'DELETE':
+        elif request.method == "DELETE":
             # Delete
             for permission in self.delete_permissions:
                 if permission(request=request, view=view):
                     return True
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: View, obj: Model) -> bool:
         """Object level permissions.
 
         All request methods are checked against the `object_rw_permissions`.
@@ -375,7 +379,8 @@ class DACrudBasePermission(DABasePermission):
         point at which you've retrieved the object.
         """
         if super(DACrudBasePermission, self).has_object_permission(
-                request=request, view=view, obj=obj):
+            request=request, view=view, obj=obj,
+        ):
             # Check permissions for all read or write requests
             return True
 
@@ -385,19 +390,19 @@ class DACrudBasePermission(DABasePermission):
                     return True
             return False
 
-        elif request.method in ['PUT', 'PATCH']:
+        elif request.method in ["PUT", "PATCH"]:
             for permission in self.object_change_permissions:
                 if permission(request=request, view=view, obj=obj):
                     return True
             return False
 
-        elif request.method == 'POST':
+        elif request.method == "POST":
             for permission in self.object_add_permissions:
                 if permission(request=request, view=view, obj=obj):
                     return True
             return False
 
-        elif request.method == 'DELETE':
+        elif request.method == "DELETE":
             for permission in self.object_delete_permissions:
                 if permission(request=request, view=view, obj=obj):
                     return True

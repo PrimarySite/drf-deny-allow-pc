@@ -1,0 +1,6 @@
+mypy
+mypy-extensions
+MonkeyType
+pytest-monkeytype
+django-stubs
+djangorestframework-stubs
