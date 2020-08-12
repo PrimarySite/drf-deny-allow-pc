@@ -1,6 +1,6 @@
 mypy
 mypy-extensions
-MonkeyType
+MonkeyType==20.5.0
 pytest-monkeytype
 django-stubs
 djangorestframework-stubs
