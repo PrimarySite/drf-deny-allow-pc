@@ -1,4 +1,4 @@
-mypy
+mypy==0.782
 mypy-extensions
 MonkeyType
 pytest-monkeytype
