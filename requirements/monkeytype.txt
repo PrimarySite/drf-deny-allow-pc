@@ -3,4 +3,4 @@ mypy-extensions
 MonkeyType
 pytest-monkeytype
 django-stubs
-djangorestframework-stubs
+djangorestframework-stubs==1.2.0
