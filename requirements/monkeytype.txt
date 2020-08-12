@@ -1,5 +1,5 @@
 mypy
-mypy-extensions
+mypy-extensions==0.4.3
 MonkeyType
 pytest-monkeytype
 django-stubs
