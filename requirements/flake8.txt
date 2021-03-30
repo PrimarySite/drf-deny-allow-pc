@@ -20,6 +20,6 @@ pep257==0.7.0
 pep8==1.7.1
 pep8-naming==0.11.1
 pip-check==2.6
-pygments==2.6.1
+pygments==2.7.4
 radon==4.1.0
 yamllint==1.24.2
