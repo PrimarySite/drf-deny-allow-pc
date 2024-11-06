@@ -1,3 +1,31 @@
+[project]
+name = "drfdapc"
+version = "1.0.0"
+readme = "README.rst"
+description = "DRF Deny All - Allow Specific Permission Classes."
+dependencies = [
+  "django>=2.2.14",
+  "djangorestframework>=3.11.0",
+  "codecov>=2.1.8",
+  "pytest>=4.6.11",
+  "pytest-cov>=2.8.0",
+  "pytest-django>=3.6.0",
+]
+keywords=["drfdapc"]
+requires-python = ">= 3.9"
+authors = [{name = "PrimarySite"}]
+maintainers = [{name="PrimarySite"}]
+classifiers=[
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+Homepage="https://github.com/PrimarySite/drf-deny-allow-pc"
+
+
 [tool.black]
 line-length = 99
 target-version = ['py37', ]
@@ -19,3 +47,5 @@ exclude = '''
   | dist
 )/
 '''
+
+

@@ -8,14 +8,23 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Linting
+          name: Ruff - (Black, flake8, Isort)
           command: |
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements/flake8.txt
             pip install -r requirements/requirements-dj22.txt
-            flake8 drfdapc
-            black -l 99 --check drfdapc
+            ruff --version
+            ruff check --extend-exclude=migrations \
+              $(git diff --diff-filter=d \
+              --name-only origin/develop..HEAD -- '*.py')
+      - run:
+          name: Linting bandit/yaml
+          command: |
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements/flake8.txt
+            pip install -r requirements/requirements-dj22.txt
             bandit -r drfdapc
             yamllint .circleci
       - run:
@@ -54,26 +63,11 @@ jobs:
             pytest drfdapc --cov=drdapc
             codecov --token=d1a7380f-e48e-4280-80b5-9004a70e935b
 
-  test-django-1.11-py-3.6:
-    docker:
-      - image: circleci/python:3.6
-        user: circleci
-    steps:
-      - checkout
-      - run:
-          name: Django 1.11 with Python 3.6
-          command: |
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements/requirements-dj111.txt
-            pytest drfdapc --cov=drdapc
-
 
 workflows:
   version: 2
   build-and-test:
     jobs:
       - test-django-2.2-py-3.7
-      - test-django-1.11-py-3.6
       - test-static
 ...
